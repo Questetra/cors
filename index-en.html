@@ -1,0 +1,49 @@
+<html>
+  <body>
+    <div id="authorized">
+      <h3>My Tasks</h3>
+      <ul id="allocated">
+      </ul>
+
+      <h3>Offered</h3>
+      <ul id="offered">
+      </ul>
+    </div>
+    
+    <div id="unauthorized" style="display: none;">
+      <div>Reload this page after logging in Questetra below.</div>
+      <a target="_blank" href="https://https://online-demo-en.questetra.net/Login_show">Questera Login</a>
+    </div>
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+      jQuery(document).ready(() => {
+        const loadTasks = (selector, reportId) => {
+          const tasks = jQuery(selector).empty();
+          fetch(`https://online-demo-en.questetra.net/API/OR/Workitem/list?reportId=${reportId}&limit=20`, {
+            credentials: 'include'
+          })
+            .then(response => {
+              if(!response.ok) {
+                jQuery('#unauthorized').show();
+                jQuery('#authorized').hide();
+                return Promise.reject('error');
+              }
+              return response.json();
+            })
+            .then(({count, workitems}) => {
+              workitems.forEach(workitem => {
+                const link = jQuery('<a>');
+                link.append(`${workitem.processModelInfoName} : ${workitem.processInstanceTitle}`);
+                link.attr('href', `https://online-demo-en.questetra.net/OR/ProcessInstance/view?processInstanceId=${workitem.processInstanceId}&workitemId=${workitem.id}`);
+                jQuery('<li>').append(link).appendTo(tasks);
+              });
+            });
+        };
+
+        loadTasks('#allocated', 'ALLOCATED');
+        loadTasks('#offered', 'OFFERED');
+      });
+    </script>
+  </body>
+</html>
